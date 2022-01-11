@@ -8,7 +8,9 @@
 import SwiftUI
 
 struct Home: View {
-    @Namespace var animation
+    var animation: Namespace.ID
+    // Shared Data
+    @EnvironmentObject var sharedData: SharedDataModel
     @StateObject var homeData: HomeViewModel = HomeViewModel()
     
     var body: some View {
@@ -83,7 +85,7 @@ struct Home: View {
             }
             .padding(.vertical)
         }
-        .frame(maxWidth : .infinity , maxHeight: .infinity)
+        .frame(maxWidth : .infinity ,maxHeight: .infinity)
         .background(Color("HomeBG"))
         // Update data whenever tab changes
         .onChange(of: homeData.productType) { newValue in
@@ -128,13 +130,27 @@ struct Home: View {
     @ViewBuilder
     func ProductCardView(product : Product) -> some View{
         VStack(spacing : 10){
-            Image(product.productImage)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: getRect().width / 2.5, height: getRect().width / 2.5)
+            
+            // adding matched geometry effect
+            ZStack{
+                if sharedData.showDetailProduct {
+                    Image(product.productImage)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .opacity(0)
+                }
+                else{
+                    Image(product.productImage)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .matchedGeometryEffect(id: "\(product.id)IMAGE", in: animation)
+                }
+            }
+            .frame(width: getRect().width / 2.5, height: getRect().width / 2.5)
             // Moving image to top to look like its fixed at half top
-                .offset(y : -80)
-                .padding(.bottom,-80)
+            .offset(y : -60)
+            .padding(.bottom,-80)
+                
             
             Text(product.title)
                 .font(.custom(customFont, size: 14))
@@ -146,18 +162,26 @@ struct Home: View {
                 .foregroundColor(.gray)
             
             Text(product.price)
-                .font(.custom(customFont, size: 14))
+                .font(.custom(customFont, size: 16))
                 .fontWeight(.bold)
                 .foregroundColor(Color("purpleColor"))
                 .padding(.top,5)
         }
-        .padding(.horizontal,20)
+        .padding(.horizontal,10)
         .padding(.bottom,22)
         .background(
-            Color(hue: 0.625, saturation: 0.008, brightness: 0.945)
+            Color.white
                 .cornerRadius(25)
         )
         .padding(.top,80)
+        // Showing Product detail when tapped
+        .onTapGesture {
+            withAnimation {
+                sharedData.detailProduct = product
+                sharedData.showDetailProduct = true
+            }
+        }
+        
     }
     
     @ViewBuilder
@@ -198,7 +222,7 @@ struct Home: View {
 
 struct Home_Previews: PreviewProvider {
     static var previews: some View {
-        Home()
+        MainPage()
     }
 }
 

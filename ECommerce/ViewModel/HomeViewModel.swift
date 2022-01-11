@@ -74,6 +74,7 @@ class HomeViewModel: ObservableObject {
             // use lazy because it requires more memory
                 .lazy
                 .filter { Product in
+                    
                     return Product.type == self.productType
                 }
             // Limiting result
